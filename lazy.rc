@@ -89,5 +89,3 @@ function eck_stop_operator_management() {
   
   eck_overwrite_operator_annotation "false" $NS
 }
-
-alias aws_ssm_prd-nosql='aws_ssm $(aws_get_instance_id $NOSQL_PRD_SCHEDULER)'
