@@ -1,0 +1,93 @@
+## AWS Helper functions
+# AWS SSM using instance ID
+
+function aws_ssm() {
+  echo
+  aws_login
+  aws ssm start-session --target "$1"
+}
+
+function aws_login() {
+  # printf "Checking if AWS credentials are available\n"
+  SSO_STATUS=$(aws sts get-caller-identity)
+
+  if [[ -z "$SSO_STATUS" ]]; then
+    printf "Getting AWS credentials\n"
+    aws sso login --profile grabtaxi
+  # else
+  #  printf "AWS Credentials available, using those instead\n"
+  fi
+}
+
+# AWS Get instance ID from Private IP Address
+function aws_get_instance_id_from_ip() {
+  aws_login
+  instance_id="$(aws ec2 describe-instances --filter Name=private-ip-address,Values="$1" --query 'Reservations[].Instances[].InstanceId' --output text)"
+  echo -n $instance_id
+}
+
+# gets the first instance using name
+function aws_get_instance_id() {
+  aws_login
+  instance_ids=("${(@f)$(aws ec2 describe-instances --filter Name=tag:Name,Values="$1" --query 'Reservations[*].Instances[*].[InstanceId]' --output text)}")
+  for instance_id in $instance_ids
+
+  SELECT=${2:-"1"}
+  echo -n "${instance_ids[$SELECT]}"
+}
+
+# AWS SSM using Private IP address
+function aws_ssh() {
+  aws_login
+  aws_ssm "$(aws_get_instance_id_from_ip $1)"
+}
+
+# AWS KMS encrypt string
+function aws_kms_encrypt() {
+  aws_login
+  aws kms encrypt --key-id="$1" --plaintext $(printf "$2" | base64)
+}
+
+# AWS decrypt string
+function aws_kms_decrypt() {
+  aws_login
+  decrypted_json=$(aws kms decrypt --ciphertext-blob="$1")
+  decrypted_secret=$(jq -r '.Plaintext' <<< $decrypted_json)
+  echo -n $decrypted_secret | base64 -d
+}
+
+# AWS set instance health in ASG to desired state
+function aws_set_asg_instance_health() {
+  aws_login
+
+  DH=${2:-"Healthy"}
+
+  aws autoscaling set-instance-health --instance-id $1 --health-status $DH
+}
+
+
+# ECK-EKS helper functions
+function eck_get_elastic_password() {
+  NS=${2:-"es-eck"}
+
+  kubectl get secret "$1-es-elastic-user" -o go-template='{{.data.elastic | base64decode}}' -n $NS
+}
+
+
+# Overwrite resources annotation in the current namespace
+function eck_overwrite_operator_annotation() {
+  ANN_KEY=${ANN_KEY:-"eck.k8s.elastic.co/managed"}
+  ANN_VAL=${1:-"true"}
+  
+  NS=${2:-"es-eck"}
+
+  kubectl annotate --overwrite elastic --all "${ANN_KEY}=${ANN_VAL}" -n $NS 
+}
+
+function eck_stop_operator_management() {
+  NS=${1:-"es-eck"}
+  
+  eck_overwrite_operator_annotation "false" $NS
+}
+
+alias aws_ssm_prd-nosql='aws_ssm $(aws_get_instance_id $NOSQL_PRD_SCHEDULER)'
