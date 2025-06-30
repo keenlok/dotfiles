@@ -1,0 +1,77 @@
+# Customize to your needs...
+
+setopt prompt_subst
+autoload -U colors && colors
+autoload -Uz vcs_info
+zstyle ':vcs_info:*' actionformats \
+    '%F{5}(%f%s%F{5})%F{3}-%F{5}[%F{2}%b%F{3}|%F{1}%a%F{5}]%f '
+zstyle ':vcs_info:*' formats       \
+    '%F{5}(%f%s%F{5})%F{3}-%F{5}[%F{2}%b%F{5}]%f '
+zstyle ':vcs_info:(sv[nk]|bzr):*' branchformat '%b%F{1}:%F{3}%r'
+
+zstyle ':vcs_info:*' enable git cvs svn hg
+
+# or use pre_cmd, see man zshcontrib
+vcs_info_wrapper() {
+    vcs_info
+    if [ -n "$vcs_info_msg_0_" ]; then
+        echo "%{$fg[grey]%}${vcs_info_msg_0_}%{$reset_color%}"
+    fi
+}
+
+docker_machine_info_wrapper() {
+    if [ -n "$DOCKER_MACHINE_NAME" ]; then
+        echo "%{$fg[blue]%}docker::${DOCKER_MACHINE_NAME}%{$reset_color%} "
+    else
+        echo "%{$fg[blue]%}docker::local%{$reset_color%} "
+    fi
+}
+
+# Build the prompt
+PROMPT=""
+PROMPT+=$'$(vcs_info_wrapper)'  # Version Control
+PROMPT+=$'$(docker_machine_info_wrapper)'
+PROMPT+="%{$fg[red]%}%m %l%{$reset_color%}"  # Host
+PROMPT+="%{$fg[yellow]%} %D{%a %f %b}%{$reset_color%}"  # Date
+PROMPT+="%{$fg[cyan]%} %T%{$reset_color%}"  # Time
+PROMPT+="%{$fg[green]%} | %~ |%{$reset_color%}" # Working directory
+PROMPT+="
+" # Newline
+PROMPT+="%n %# "  # Username and prompt
+
+
+export PATH="$PATH:/Users/keenlok.lai/Documents/phabricator/arcanist/bin/"
+export PATH=$PATH:/usr/local/bin
+export PATH="/opt/homebrew/bin:$PATH"
+#export PATH="/usr/local/Homebrew/opt/openjdk@8/bin:$PATH"
+export PATH="/Applications/CMake.app/Contents/bin":"$PATH"
+
+[ -f ~/.kubectl_aliases ] && source ~/.kubectl_aliases
+
+function kubectl() { echo "+ kubectl $@">&2; command kubectl $@; }
+
+alias ibrew='arch -x86_64 /usr/local/Homebrew/bin/brew'
+
+export PATH="/Users/keenlok.lai/.pyenv/shims/:$PATH"
+
+export PATH="$HOME/.jenv/bin:$PATH"
+eval "$(jenv init -)"
+
+source ~/.grabrc
+fpath=(path/to/zsh-completions/src $fpath)
+#source <(kubectl completion bash)
+
+source ~/.shortcuts/lazy.rc
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/keenlok.lai/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/keenlok.lai/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/keenlok.lai/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/keenlok.lai/google-cloud-sdk/completion.zsh.inc'; fi
+
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
