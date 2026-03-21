@@ -3,6 +3,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+CONFIG_DIR="${REPO_ROOT}/configs"
 STAMP="$(date +%Y%m%d%H%M%S)"
 NVM_VERSION="${NVM_VERSION:-v0.40.3}"
 NODE_VERSION="${NODE_VERSION:-20}"
@@ -115,10 +117,10 @@ backup_if_exists "${HOME}/.zprofile"
 backup_if_exists "${HOME}/.zshrc"
 backup_if_exists "${HOME}/.shortcuts/lazy.rc"
 
-link_file "${SCRIPT_DIR}/.gitconfig" "${HOME}/.gitconfig"
-link_file "${SCRIPT_DIR}/.zprofile" "${HOME}/.zprofile"
-link_file "${SCRIPT_DIR}/.zshrc_ubuntu" "${HOME}/.zshrc"
-link_file "${SCRIPT_DIR}/lazy.rc" "${HOME}/.shortcuts/lazy.rc"
+link_file "${CONFIG_DIR}/.gitconfig" "${HOME}/.gitconfig"
+link_file "${CONFIG_DIR}/.zprofile" "${HOME}/.zprofile"
+link_file "${CONFIG_DIR}/.zshrc_ubuntu" "${HOME}/.zshrc"
+link_file "${CONFIG_DIR}/lazy.rc" "${HOME}/.shortcuts/lazy.rc"
 
 if [[ "${SHELL:-}" != "$(command -v zsh)" ]]; then
   echo
