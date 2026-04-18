@@ -1,7 +1,7 @@
 # This is Git's per-user configuration file.
 [user]
     name = keenlok.lai
-    email = keenlok.lai@grabtaxi.com
+    email = keenloklai@gmail.com
 
 [color]
     ui = true
@@ -17,7 +17,5 @@
     fixup = "!f() { TARGET=$(git rev-parse "$1"); git commit --fixup=$TARGET ${@:2} && EDITOR=true git rebase -i --autostash --autosquash $TARGET^; }; f"
     ls-subtrees = !"git log | grep git-subtree-dir | gawk '{ print $2 }'"
 
-[url "git@gitlab.myteksi.net:"]
-	insteadOf = https://gitlab.myteksi.net/
 [push]
 	autoSetupRemote = true
